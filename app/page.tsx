@@ -95,8 +95,8 @@ export default function Home() {
   // Disable static generation for this page
   unstable_noStore();
   
-  const tasks = useQuery(api.tasks.list, { limit: 100 });
-  const agents = useQuery(api.agents.list, { limit: 100 });
+  const tasks = useQuery(api.tasks.list, {});
+  const agents = useQuery(api.agents.list, {});
   const activities = useQuery(api.activities.list, { limit: 10 });
 
   const activeTasks = tasks?.filter(t => t.status !== 'done' && !t.archivedAt).length ?? 0;

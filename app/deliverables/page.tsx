@@ -1,5 +1,6 @@
 'use client';
 
+import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -42,6 +43,8 @@ interface Deliverable {
 }
 
 export default function DeliverablesPage() {
+  unstable_noStore();
+
   // Get current user's squad (in production, this would come from auth context)
   const [userSquad] = useState<Squad>('oceans-11');
   
