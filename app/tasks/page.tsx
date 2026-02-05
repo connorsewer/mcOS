@@ -1,7 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
+import { unstable_noStore } from "next/cache";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -170,6 +169,8 @@ function TaskColumnSkeleton() {
 }
 
 export default function TasksPage() {
+  unstable_noStore();
+  
   const [activeFilter, setActiveFilter] = useState<'all' | 'oceans' | 'dune'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [showNewTaskDialog, setShowNewTaskDialog] = useState(false);

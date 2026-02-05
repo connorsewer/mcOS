@@ -1,7 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
+import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,6 +73,8 @@ function ActivitySkeleton() {
 }
 
 export default function ActivityPage() {
+  unstable_noStore();
+  
   const activities = useQuery(api.activities.list, { limit: 50 });
   const [searchQuery, setSearchQuery] = useState('');
 

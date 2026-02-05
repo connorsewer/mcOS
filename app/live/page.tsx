@@ -1,7 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
+import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +49,8 @@ function modelColor(model: string): string {
 }
 
 export default function LivePage() {
+  unstable_noStore();
+  
   const [selectedSquad, setSelectedSquad] = useState<Squad | undefined>(undefined);
   
   // Real-time Convex subscriptions

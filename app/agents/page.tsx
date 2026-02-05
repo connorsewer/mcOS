@@ -1,7 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
+import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +93,8 @@ function AgentSkeleton() {
 }
 
 export default function AgentsPage() {
+  unstable_noStore();
+  
   const [activeTab, setActiveTab] = useState<'all' | 'oceans' | 'dune'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'idle' | 'blocked'>('all');
