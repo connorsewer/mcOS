@@ -1,0 +1,339 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* MCOS War Room Design System
+ * Dark theme with amber/gold accents
+ * Inspired by Ocean's 11 planning rooms
+ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Squad Colors */
+  --color-squad-oceans: var(--squad-oceans);
+  --color-squad-dune: var(--squad-dune);
+  
+  /* Status Colors */
+  --color-status-active: var(--status-active);
+  --color-status-idle: var(--status-idle);
+  --color-status-blocked: var(--status-blocked);
+  --color-status-review: var(--status-review);
+  
+  /* Core tokens */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  /* Spacing Tokens */
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+}
+
+:root {
+  --radius: 0.75rem;
+  
+  /* Standard Spacing (4px grid) */
+  --space-xs: 0.25rem;  /* 4px */
+  --space-sm: 0.5rem;   /* 8px */
+  --space-md: 1rem;     /* 16px */
+  --space-lg: 1.5rem;   /* 24px */
+  --space-xl: 2rem;     /* 32px */
+  --space-2xl: 3rem;    /* 48px */
+
+  /* War Room Dark Theme */
+  --background: #0a0a0b;
+  --foreground: #fafafa;
+  
+  /* Card/Panels */
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #1f1f23;
+  --popover-foreground: #fafafa;
+  
+  /* Primary: Amber/Gold */
+  --primary: #f59e0b;
+  --primary-foreground: #0a0a0b;
+  
+  /* Secondary */
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  
+  /* Muted */
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  
+  /* Accent */
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
+  
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  
+  /* Borders */
+  --border: #27272a;
+  --input: #3f3f46;
+  --ring: #f59e0b;
+  
+  /* Squad Colors */
+  --squad-oceans: #3b82f6;
+  --squad-dune: #a855f7;
+  
+  /* Status Colors */
+  --status-active: #22c55e;
+  --status-idle: #71717a;
+  --status-blocked: #ef4444;
+  --status-review: #f59e0b;
+  
+  /* Charts */
+  --chart-1: #f59e0b;
+  --chart-2: #3b82f6;
+  --chart-3: #a855f7;
+  --chart-4: #22c55e;
+  --chart-5: #ef4444;
+  
+  /* Sidebar */
+  --sidebar: #111113;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #0a0a0b;
+  --sidebar-accent: #1f1f23;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #f59e0b;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* MCOS Custom Components */
+@layer components {
+  .mcos-card {
+    @apply bg-card border border-border rounded-xl p-5;
+    @apply hover:border-border/80 transition-colors;
+  }
+  
+  .mcos-card-hover {
+    @apply bg-card border border-border rounded-xl p-5;
+    @apply hover:bg-accent hover:border-border/80 transition-all;
+  }
+  
+  .mcos-status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+  
+  .mcos-status-active {
+    @apply bg-status-active;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+  }
+  
+  .mcos-status-idle {
+    @apply bg-status-idle;
+  }
+  
+  .mcos-status-blocked {
+    @apply bg-status-blocked;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  }
+  
+  .mcos-status-review {
+    @apply bg-status-review;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+  }
+  
+  .mcos-squad-oceans {
+    @apply text-squad-oceans;
+  }
+  
+  .mcos-squad-dune {
+    @apply text-squad-dune;
+  }
+  
+  .mcos-attention-panel {
+    @apply bg-gradient-to-r from-primary/10 to-transparent border-l-2 border-primary;
+  }
+  
+  .mcos-glow {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+  }
+}
+
+/* Animation utilities */
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+  }
+}
+
+/* Skeleton Animation */
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Motion + Interaction Tokens */
+:root {
+  /* Motion */
+  --transition-fast: 150ms ease;
+  --transition-default: 200ms ease-out;
+  --transition-panel-enter: 200ms ease-out;
+  --transition-panel-exit: 150ms ease-in;
+
+  /* Skeleton */
+  --skeleton-from: #27272a;
+  --skeleton-to: #3f3f46;
+
+  /* Touch */
+  --touch-min: 44px;
+  --touch-standard: 40px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .animate-skeleton-pulse {
+    animation: none;
+    background: var(--skeleton-from);
+  }
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  z-index: 100;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Card lift on hover */
+.card-lift {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Panel slide animation */
+.panel-enter {
+  animation: panel-slide-in var(--transition-panel-enter);
+}
+
+.panel-exit {
+  animation: panel-slide-out var(--transition-panel-exit);
+}
+
+@keyframes panel-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes panel-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobile bottom nav safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
