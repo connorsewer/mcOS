@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-commit hook to catch TypeScript errors before pushing to Vercel
+
+echo "Running TypeScript check..."
+
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$REPO_ROOT"
+"$REPO_ROOT/node_modules/.bin/tsc" --noEmit --project tsconfig.json
+
+if [ $? -ne 0 ]; then
+    echo "❌ TypeScript errors found. Fix them before committing."
+    exit 1
+fi
+
+echo "✅ TypeScript check passed."
+exit 0
