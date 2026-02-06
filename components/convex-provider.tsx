@@ -3,22 +3,22 @@
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ReactNode, useEffect, useState } from "react";
 
+// Dummy client for SSR - doesn't actually connect
+const DUMMY_URL = "https://dummy.convex.cloud";
+
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient | null>(null);
+  const [client, setClient] = useState<ConvexReactClient>(() => {
+    // Initialize with dummy URL for SSR
+    return new ConvexReactClient(DUMMY_URL);
+  });
 
   useEffect(() => {
-    // Only initialize on client side
+    // Replace with real client on mount
     const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-    if (url) {
+    if (url && url !== DUMMY_URL) {
       setClient(new ConvexReactClient(url));
     }
   }, []);
-
-  // During SSR/hydration, render children without provider
-  // The hooks will return undefined (loading state)
-  if (!client) {
-    return <>{children}</>;
-  }
 
   return <ConvexProvider client={client}>{children}</ConvexProvider>;
 }
