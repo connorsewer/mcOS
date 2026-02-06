@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import DeliverablesPageClient from './page-client';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 function LoadingFallback() {
   return (

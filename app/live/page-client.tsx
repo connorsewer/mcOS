@@ -12,7 +12,7 @@ import {
   Users,
   Briefcase
 } from "lucide-react";
-import { useActivitiesFeed, type Squad } from "@/hooks/useActivities";
+import { useActivities, type Squad } from "@/hooks/useActivities";
 import { useTasks, useCreateTask } from "@/hooks/useTasks";
 import { useAgents } from "@/hooks/useAgents";
 import { Skeleton } from "@/components/skeleton";
@@ -54,15 +54,15 @@ export default function LivePage() {
   const [selectedSquad, setSelectedSquad] = useState<Squad | undefined>(undefined);
   
   // Real-time Convex subscriptions
-  const { results: activities, status, loadMore } = useActivitiesFeed({ 
-    squad: selectedSquad,
-    initialNumItems: 20 
+  const activities = useActivities({ 
+    limit: 20,
+    squad: selectedSquad
   });
   const tasks = useTasks({ squad: selectedSquad });
   const agents = useAgents({ squad: selectedSquad });
   
-  const isLoading = status === 'LoadingFirstPage';
-  const canLoadMore = status === 'CanLoadMore';
+  const isLoading = activities === undefined;
+  const canLoadMore = false;
   
   // Stats
   const activeTasks = tasks?.filter(t => t.status === 'in_progress').length || 0;
@@ -243,16 +243,11 @@ export default function LivePage() {
                 LIVE
               </Badge>
             </div>
-            {canLoadMore && (
-              <Button variant="outline" size="sm" onClick={() => loadMore(20)}>
-                Load More
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-border">
-            {activities?.map((activity: any) => {
+            {activities?.map((activity) => {
               const model = inferModel(activity.action);
               const timestamp = activity.createdAt || activity._creationTime;
               
