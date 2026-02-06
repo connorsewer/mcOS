@@ -1,44 +1,39 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 
-// Get the Convex URL from environment
-const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+// Global singleton for the Convex client
+let globalConvexClient: ConvexReactClient | undefined;
 
-// Create client lazily to avoid initialization errors during build
-function createConvexClient() {
-  if (!CONVEX_URL) {
-    console.error("NEXT_PUBLIC_CONVEX_URL is not set");
-    return null;
+function createConvexClient(): ConvexReactClient | undefined {
+  if (typeof window === "undefined") return undefined;
+  
+  if (!globalConvexClient) {
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!url) {
+      console.error("NEXT_PUBLIC_CONVEX_URL is not set");
+      return undefined;
+    }
+    globalConvexClient = new ConvexReactClient(url);
   }
-  try {
-    return new ConvexReactClient(CONVEX_URL);
-  } catch (e) {
-    console.error("Failed to create Convex client:", e);
-    return null;
-  }
+  
+  return globalConvexClient;
 }
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient | null>(null);
-  const [isReady, setIsReady] = useState(false);
+  // Create client synchronously on first render (only runs on client due to 'use client')
+  // But use useState to avoid creating during SSR
+  const [client] = useState(() => createConvexClient());
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Only create client on the client side
-    const c = createConvexClient();
-    setClient(c);
-    setIsReady(true);
+    setMounted(true);
   }, []);
 
-  if (!isReady) {
-    // Render children without provider during SSR/initial render
-    return <>{children}</>;
-  }
-
-  if (!client) {
-    // If no client, render children without provider
-    // Hooks will return undefined which components should handle
+  // During SSR and initial hydration, render without provider
+  // After mount, render with provider
+  if (!mounted || !client) {
     return <>{children}</>;
   }
 
