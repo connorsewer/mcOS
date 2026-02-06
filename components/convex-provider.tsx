@@ -1,24 +1,25 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 
-// Dummy client for SSR - doesn't actually connect
-const DUMMY_URL = "https://dummy.convex.cloud";
+// Create client once at module level
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+let client: ConvexReactClient | null = null;
+
+function getConvexClient() {
+  if (!client) {
+    if (!CONVEX_URL) {
+      console.error("NEXT_PUBLIC_CONVEX_URL is not set");
+      // This will cause hooks to fail gracefully with undefined
+      client = new ConvexReactClient("https://dummy.convex.cloud");
+    } else {
+      client = new ConvexReactClient(CONVEX_URL);
+    }
+  }
+  return client;
+}
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient>(() => {
-    // Initialize with dummy URL for SSR
-    return new ConvexReactClient(DUMMY_URL);
-  });
-
-  useEffect(() => {
-    // Replace with real client on mount
-    const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-    if (url && url !== DUMMY_URL) {
-      setClient(new ConvexReactClient(url));
-    }
-  }, []);
-
-  return <ConvexProvider client={client}>{children}</ConvexProvider>;
+  return <ConvexProvider client={getConvexClient()}>{children}</ConvexProvider>;
 }
