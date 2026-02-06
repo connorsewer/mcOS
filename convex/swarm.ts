@@ -5,7 +5,15 @@ import { query, mutation } from "./_generated/server";
 export const list = query({
   args: {
     limit: v.optional(v.number()),
-    activityType: v.optional(v.string()),
+    activityType: v.optional(v.union(
+      v.literal("state_update"),
+      v.literal("worker_spawned"),
+      v.literal("task_completed"),
+      v.literal("approval_requested"),
+      v.literal("approval_executed"),
+      v.literal("error"),
+      v.literal("info")
+    )),
     squad: v.optional(v.union(v.literal("oceans-11"), v.literal("dune"))),
   },
   returns: v.array(v.any()),
