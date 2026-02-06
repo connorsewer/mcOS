@@ -72,12 +72,23 @@ export const list = query({
     // Join with agent names
     const deliverablesWithAgents = await Promise.all(
       deliverables.map(async (d) => {
-        const agent = await ctx.db.get(d.createdByAgentId);
-        return {
-          ...d,
-          createdByName: agent?.name ?? "Unknown Agent",
-          createdByRole: agent?.role ?? "Unknown",
-        };
+        try {
+          const agent = d.createdByAgentId 
+            ? await ctx.db.get(d.createdByAgentId) 
+            : null;
+          return {
+            ...d,
+            createdByName: agent?.name ?? "Unknown Agent",
+            createdByRole: agent?.role ?? "Unknown",
+          };
+        } catch (err) {
+          console.error(`Error fetching agent for deliverable ${d._id}:`, err);
+          return {
+            ...d,
+            createdByName: "Unknown Agent",
+            createdByRole: "Unknown",
+          };
+        }
       })
     );
 
