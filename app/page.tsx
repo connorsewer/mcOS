@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { unstable_noStore } from "next/cache";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { 
   AlertCircle, 
   ArrowRight, 
@@ -92,24 +88,30 @@ function StatCardSkeleton() {
   );
 }
 
+// Simple client-side data fetcher
+function useClientData() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Simulate loading for now - will be replaced with Convex
+    const timer = setTimeout(() => {
+      setData({
+        tasks: { active: 0, blocked: 0 },
+        agents: { active: 0 },
+        activities: []
+      });
+      setLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  return { data, loading };
+}
+
 export default function Home() {
-  // Disable static generation for this page
-  unstable_noStore();
-  
-  // Client-only rendering to avoid Convex SSR issues
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
-  
-  const tasks = useQuery(api.tasks.list, {});
-  const agents = useQuery(api.agents.list, {});
-  const activities = useQuery(api.activities.list, { limit: 10 });
-
-  const activeTasks = tasks?.filter(t => t.status !== 'done' && !t.archivedAt).length ?? 0;
-  const blockedTasks = tasks?.filter(t => t.status === 'blocked').length ?? 0;
-  const activeAgents = agents?.filter(a => a.status === 'active').length ?? 0;
-  const totalActivities = activities?.length ?? 0;
-
-  const isLoading = !isClient || tasks === undefined || agents === undefined || activities === undefined;
+  const { data, loading } = useClientData();
 
   return (
     <div className="space-y-8">
@@ -161,7 +163,7 @@ export default function Home() {
           </Badge>
         </div>
         
-        {isLoading ? (
+        {loading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCardSkeleton />
             <StatCardSkeleton />
@@ -172,15 +174,15 @@ export default function Home() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Active Tasks"
-              value={activeTasks}
-              subtitle={`${blockedTasks} blocked`}
+              value={data?.tasks?.active ?? 0}
+              subtitle={`${data?.tasks?.blocked ?? 0} blocked`}
               icon={CheckCircle2}
               href="/tasks"
               color="blue"
             />
             <StatCard
               title="Blocked"
-              value={blockedTasks}
+              value={data?.tasks?.blocked ?? 0}
               subtitle="Need attention"
               icon={AlertCircle}
               href="/tasks"
@@ -188,7 +190,7 @@ export default function Home() {
             />
             <StatCard
               title="Active Agents"
-              value={activeAgents}
+              value={data?.agents?.active ?? 0}
               subtitle="Online now"
               icon={Users}
               href="/agents"
@@ -196,7 +198,7 @@ export default function Home() {
             />
             <StatCard
               title="Activities"
-              value={totalActivities}
+              value={data?.activities?.length ?? 0}
               subtitle="Recent updates"
               icon={Activity}
               href="/activity"
@@ -206,208 +208,49 @@ export default function Home() {
         )}
       </div>
 
-      {/* Quick Actions & Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Quick Actions */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Common tasks and navigation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/tasks">
-              <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Briefcase className="w-4 h-4 text-blue-500" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">Tasks</div>
-                  <div className="text-xs text-muted-foreground">Manage squad tasks</div>
-                </div>
-                <ArrowRight className="w-4 h-4 ml-auto opacity-50" />
-              </Button>
-            </Link>
-            <Link href="/agents">
-              <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-purple-500" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">Agents</div>
-                  <div className="text-xs text-muted-foreground">View squad members</div>
-                </div>
-                <ArrowRight className="w-4 h-4 ml-auto opacity-50" />
-              </Button>
-            </Link>
-            <Link href="/live">
-              <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-emerald-500" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">Live Monitor</div>
-                  <div className="text-xs text-muted-foreground">Real-time dashboard</div>
-                </div>
-                <ArrowRight className="w-4 h-4 ml-auto opacity-50" />
-              </Button>
-            </Link>
-            <Link href="/activity">
-              <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-amber-500" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">Activity</div>
-                  <div className="text-xs text-muted-foreground">View history</div>
-                </div>
-                <ArrowRight className="w-4 h-4 ml-auto opacity-50" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>
-                Latest updates from your squads
-              </CardDescription>
-            </div>
-            <Link href="/activity">
-              <Button variant="ghost" size="sm" className="gap-1">
-                View all
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {activities === undefined ? (
-              <div className="space-y-4">
-                <Skeleton height="3rem" />
-                <Skeleton height="3rem" />
-                <Skeleton height="3rem" />
-              </div>
-            ) : activities.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>No recent activity</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activities.slice(0, 5).map((activity: any) => (
-                  <div 
-                    key={activity._id} 
-                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <MessageSquare className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{activity.agentName || 'System'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(activity._creationTime).toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {activity.action}
-                        {activity.details?.target && (
-                          <span className="text-foreground"> {activity.details.target}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Squads Overview */}
+      {/* Quick Actions */}
       <div>
         <h2 className="text-xl font-semibold tracking-tight mb-4 flex items-center gap-2">
           <Target className="w-5 h-5 text-muted-foreground" />
-          Squad Overview
+          Quick Actions
         </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="relative overflow-hidden group hover:shadow-lg transition-all">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/25">
-                  O11
-                </div>
-                <div>
-                  <CardTitle>Ocean's 11</CardTitle>
-                  <CardDescription>Career & Job Acquisition</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-blue-500" />
-                  <span>{tasks?.filter((t: any) => t.squad === 'oceans-11').length || 0} tasks</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-purple-500" />
-                  <span>{agents?.filter((a: any) => a.squad === 'oceans-11').length || 0} agents</span>
-                </div>
-              </div>
-              <Separator className="my-4" />
-              <Link href="/tasks">
-                <Button variant="outline" size="sm" className="w-full">
-                  View Tasks
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden group hover:shadow-lg transition-all">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-amber-500/25">
-                  DUNE
-                </div>
-                <div>
-                  <CardTitle>Dune</CardTitle>
-                  <CardDescription>AI & Automation Systems</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-amber-500" />
-                  <span>{tasks?.filter((t: any) => t.squad === 'dune').length || 0} tasks</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-purple-500" />
-                  <span>{agents?.filter((a: any) => a.squad === 'dune').length || 0} agents</span>
-                </div>
-              </div>
-              <Separator className="my-4" />
-              <Link href="/tasks">
-                <Button variant="outline" size="sm" className="w-full">
-                  View Tasks
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Link href="/tasks">
+            <Card className="hover:shadow-lg transition-all cursor-pointer">
+              <CardContent className="p-6">
+                <Briefcase className="w-8 h-8 text-blue-500 mb-3" />
+                <CardTitle className="text-lg">Tasks</CardTitle>
+                <CardDescription>Manage squad tasks</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/agents">
+            <Card className="hover:shadow-lg transition-all cursor-pointer">
+              <CardContent className="p-6">
+                <Users className="w-8 h-8 text-purple-500 mb-3" />
+                <CardTitle className="text-lg">Agents</CardTitle>
+                <CardDescription>View squad members</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/live">
+            <Card className="hover:shadow-lg transition-all cursor-pointer">
+              <CardContent className="p-6">
+                <Activity className="w-8 h-8 text-emerald-500 mb-3" />
+                <CardTitle className="text-lg">Live Monitor</CardTitle>
+                <CardDescription>Real-time dashboard</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/activity">
+            <Card className="hover:shadow-lg transition-all cursor-pointer">
+              <CardContent className="p-6">
+                <Clock className="w-8 h-8 text-amber-500 mb-3" />
+                <CardTitle className="text-lg">Activity</CardTitle>
+                <CardDescription>View history</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </div>
