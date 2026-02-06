@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  // Disable static generation for all pages
   output: 'standalone',
 };
 
