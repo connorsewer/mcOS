@@ -4,7 +4,8 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ReactNode } from "react";
 
 // Create client once at module level
-const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+// Use NEXT_PUBLIC_ prefix for client-side env vars, fallback to CONVEX_URL for server
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
 let client: ConvexReactClient | null = null;
 
 function getConvexClient() {

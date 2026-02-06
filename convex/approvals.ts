@@ -143,3 +143,97 @@ export const decide = mutation({
     }
   }
 });
+
+// Execute an approved action (for Singularity executor)
+export const execute = mutation({
+  args: {
+    id: v.id("approvals"),
+    executionResult: v.optional(v.any()),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    approvalId: v.id("approvals"),
+    error: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const approval = await ctx.db.get(args.id);
+    if (!approval) {
+      return { success: false, approvalId: args.id, error: "Approval not found" };
+    }
+    if (approval.status !== "approved") {
+      return { success: false, approvalId: args.id, error: `Approval status is ${approval.status}, expected 'approved'` };
+    }
+
+    const now = Date.now();
+    
+    // Mark as executed
+    await ctx.db.patch(args.id, {
+      status: "executed",
+      executedAt: now,
+      updatedAt: now,
+      executionResult: args.executionResult,
+    });
+
+    // Log swarm activity
+    await ctx.db.insert("swarmActivity", {
+      source: "singularity",
+      activityType: "approval_executed",
+      payload: {
+        approvalId: approval._id,
+        actionType: approval.actionType,
+        executionResult: args.executionResult,
+      },
+      createdAt: now,
+      agentId: approval.requestedByAgentId,
+      taskId: approval.relatedTaskId,
+    });
+
+    // Log to activities feed
+    if (approval.requestedByAgentId) {
+      await ctx.db.insert("activities", {
+        agentId: approval.requestedByAgentId,
+        taskId: approval.relatedTaskId,
+        action: "approval_executed",
+        details: {
+          approvalId: approval._id,
+          actionType: approval.actionType,
+        },
+        createdAt: now,
+      });
+    }
+
+    return { success: true, approvalId: args.id };
+  }
+});
+
+// List approved but not yet executed approvals (for executor polling)
+export const listApproved = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(v.any()),
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+    
+    const approvals = await ctx.db
+      .query("approvals")
+      .withIndex("by_status", (q) => q.eq("status", "approved"))
+      .order("asc")
+      .take(limit);
+    
+    // Enrich with agent names
+    const enriched = await Promise.all(
+      approvals.map(async (approval) => {
+        const agent = approval.requestedByAgentId 
+          ? await ctx.db.get(approval.requestedByAgentId)
+          : null;
+        return {
+          ...approval,
+          requestedByName: agent?.name || 'System',
+        };
+      })
+    );
+    
+    return enriched;
+  }
+});

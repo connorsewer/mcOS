@@ -14,6 +14,7 @@ import type * as approvals from "../approvals.js";
 import type * as deliverables from "../deliverables.js";
 import type * as seed from "../seed.js";
 import type * as seedAgents from "../seedAgents.js";
+import type * as swarm from "../swarm.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   deliverables: typeof deliverables;
   seed: typeof seed;
   seedAgents: typeof seedAgents;
+  swarm: typeof swarm;
   tasks: typeof tasks;
 }>;
 

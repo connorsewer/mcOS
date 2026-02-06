@@ -133,7 +133,7 @@ export default defineSchema({
   approvals: defineTable({
     actionType: v.string(),
     payload: v.any(),
-    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("executed")),
     createdAt: v.number(),
     updatedAt: v.number(),
     requestedByAgentId: v.optional(v.id("agents")),
@@ -141,7 +141,33 @@ export default defineSchema({
     decisionNote: v.optional(v.string()),
     relatedTaskId: v.optional(v.id("tasks")),
     correlationId: v.optional(v.string()),
+    executedAt: v.optional(v.number()),
+    executionResult: v.optional(v.any()),
   })
     .index("by_status", ["status"])
     .index("by_task", ["relatedTaskId"]),
+
+  // Swarm activity - real-time state for MCOS Live tab
+  swarmActivity: defineTable({
+    source: v.string(), // 'conductor', 'system', 'cron', etc.
+    activityType: v.union(
+      v.literal("state_update"),
+      v.literal("worker_spawned"),
+      v.literal("task_completed"),
+      v.literal("approval_requested"),
+      v.literal("approval_executed"),
+      v.literal("error"),
+      v.literal("info")
+    ),
+    payload: v.any(),
+    createdAt: v.number(),
+    agentId: v.optional(v.id("agents")),
+    taskId: v.optional(v.id("tasks")),
+    squad: v.optional(v.union(v.literal("oceans-11"), v.literal("dune"))),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_type", ["activityType"])
+    .index("by_agent", ["agentId"])
+    .index("by_task", ["taskId"])
+    .index("by_squad", ["squad"]),
 });
