@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from "react";
 import { unstable_noStore } from "next/cache";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -95,6 +96,10 @@ export default function Home() {
   // Disable static generation for this page
   unstable_noStore();
   
+  // Client-only rendering to avoid Convex SSR issues
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+  
   const tasks = useQuery(api.tasks.list, {});
   const agents = useQuery(api.agents.list, {});
   const activities = useQuery(api.activities.list, { limit: 10 });
@@ -104,7 +109,7 @@ export default function Home() {
   const activeAgents = agents?.filter(a => a.status === 'active').length ?? 0;
   const totalActivities = activities?.length ?? 0;
 
-  const isLoading = tasks === undefined || agents === undefined || activities === undefined;
+  const isLoading = !isClient || tasks === undefined || agents === undefined || activities === undefined;
 
   return (
     <div className="space-y-8">
