@@ -10,16 +10,17 @@ export type Status = 'draft' | 'review' | 'approved' | 'published' | 'archived';
 export type DeliverableType = 'research' | 'blog_draft' | 'email_copy' | 'white_paper' | 'presentation' | 'image' | 'spreadsheet' | 'brief' | 'other';
 
 export interface Deliverable {
-  _id: Id<"deliverables">;
+  _id: string;
   _creationTime: number;
   title: string;
   type: DeliverableType;
   status: Status;
   squad: Squad;
-  createdBy: Id<"agents">;
   createdByName: string;
+  createdByAgentId?: string;
   version: number;
   updatedAt: number;
+  createdAt: number;
   content?: string;
   contentFormat?: 'markdown' | 'plain' | 'html';
   fileUrl?: string;
@@ -70,7 +71,7 @@ export function useDeliverablesSearch(args?: {
   const isClient = useIsClient();
   const result = useQuery(
     api.deliverables.search,
-    isClient && args?.query ? args : "skip"
+    isClient && args?.query ? { query: args.query, squad: args.squad, limit: args.limit } : "skip"
   );
   return isClient ? result : undefined;
 }
@@ -78,11 +79,11 @@ export function useDeliverablesSearch(args?: {
 /**
  * Get a single deliverable by ID
  */
-export function useDeliverable(id?: Id<"deliverables">) {
+export function useDeliverable(id?: string) {
   const isClient = useIsClient();
   const result = useQuery(
     api.deliverables.get,
-    isClient && id ? { id } : "skip"
+    isClient && id ? { id: id as Id<"deliverables"> } : "skip"
   );
   return isClient ? result : undefined;
 }
@@ -98,19 +99,35 @@ export function useCreateDeliverable() {
  * Update a deliverable
  */
 export function useUpdateDeliverable() {
-  return useMutation(api.deliverables.update);
+  const mutate = useMutation(api.deliverables.update);
+  return (args: {
+    id: string;
+    title: string;
+    content?: string;
+    contentFormat?: 'markdown' | 'plain' | 'html';
+    fileUrl?: string;
+    fileType?: string;
+    fileSize?: number;
+    changeSummary: string;
+  }) => mutate({ ...args, id: args.id as Id<"deliverables"> });
 }
 
 /**
  * Update deliverable status
  */
 export function useUpdateDeliverableStatus() {
-  return useMutation(api.deliverables.updateStatus);
+  const mutate = useMutation(api.deliverables.updateStatus);
+  return (args: {
+    id: string;
+    status: Status;
+    changeSummary?: string;
+  }) => mutate({ ...args, id: args.id as Id<"deliverables"> });
 }
 
 /**
  * Archive a deliverable
  */
 export function useArchiveDeliverable() {
-  return useMutation(api.deliverables.archive);
+  const mutate = useMutation(api.deliverables.archive);
+  return (args: { id: string }) => mutate({ id: args.id as Id<"deliverables"> });
 }

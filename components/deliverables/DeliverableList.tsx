@@ -4,29 +4,12 @@ import { useState } from 'react';
 import { LayoutGrid, List, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeliverableCard } from './DeliverableCard';
-
-type DeliverableType = 'research' | 'blog_draft' | 'email_copy' | 'white_paper' | 'presentation' | 'image' | 'spreadsheet' | 'brief' | 'other';
-type DeliverableStatus = 'draft' | 'review' | 'approved' | 'published' | 'archived';
-
-interface Deliverable {
-  _id: string;
-  title: string;
-  type: DeliverableType;
-  status: DeliverableStatus;
-  squad: 'oceans-11' | 'dune';
-  createdByName: string;
-  version: number;
-  createdAt: number;
-  updatedAt: number;
-  content?: string;
-  fileUrl?: string;
-  fileType?: string;
-}
+import type { Deliverable } from '@/hooks/useDeliverables';
 
 interface DeliverableListProps {
   deliverables: Deliverable[];
   isLoading?: boolean;
-  onSelect: (deliverable: Deliverable) => void;
+  onSelect: (deliverable: Deliverable | null) => void;
   emptyMessage?: string;
 }
 
