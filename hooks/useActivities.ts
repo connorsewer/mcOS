@@ -3,7 +3,7 @@
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useEffect, useState } from "react";
+import { useConvexReady } from "@/components/convex-provider";
 
 export type Squad = "oceans-11" | "dune";
 
@@ -12,26 +12,17 @@ export type UseActivitiesFeedArgs = {
   initialNumItems?: number;
 };
 
-// Hook to detect if we're on the client
-function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  return isClient;
-}
-
 /**
  * Simple limit-based activity list (backward compatible).
  * Returns an array for easy use in existing components.
  */
 export function useActivities(args: { limit?: number; squad?: Squad } = {}) {
-  const isClient = useIsClient();
-  const result = useQuery(api.activities.list, isClient ? {
+  const isReady = useConvexReady();
+  const result = useQuery(api.activities.list, isReady ? {
     limit: args.limit ?? 50,
     squad: args.squad,
   } : "skip");
-  return isClient ? result : undefined;
+  return isReady ? result : undefined;
 }
 
 /**
@@ -39,10 +30,10 @@ export function useActivities(args: { limit?: number; squad?: Squad } = {}) {
  * Uses Convex's real-time subscriptions for live updates.
  */
 export function useActivitiesFeed(args: UseActivitiesFeedArgs = {}) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   return usePaginatedQuery(
     api.activities.paginated,
-    isClient ? { squad: args.squad } : "skip",
+    isReady ? { squad: args.squad } : "skip",
     {
       initialNumItems: args.initialNumItems ?? 50,
     }
@@ -56,10 +47,10 @@ export function useActivitiesByAgent(
   agentId: Id<"agents">,
   opts?: { initialNumItems?: number }
 ) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   return usePaginatedQuery(
     api.activities.byAgent,
-    isClient ? { agentId } : "skip",
+    isReady ? { agentId } : "skip",
     { initialNumItems: opts?.initialNumItems ?? 20 }
   );
 }
@@ -71,10 +62,10 @@ export function useActivitiesByTask(
   taskId: Id<"tasks">,
   opts?: { initialNumItems?: number }
 ) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   return usePaginatedQuery(
     api.activities.byTask,
-    isClient ? { taskId } : "skip",
+    isReady ? { taskId } : "skip",
     { initialNumItems: opts?.initialNumItems ?? 20 }
   );
 }

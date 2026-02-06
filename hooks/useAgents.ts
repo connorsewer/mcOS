@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useEffect, useState } from "react";
+import { useConvexReady } from "@/components/convex-provider";
 
 export type Squad = "oceans-11" | "dune";
 
@@ -26,38 +26,29 @@ export type Agent = {
   hourlyMutationCount?: number;
 };
 
-// Hook to detect if we're on the client
-function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  return isClient;
-}
-
 /**
  * Get all agents with optional squad filtering.
  */
 export function useAgents(args: { squad?: Squad } = {}) {
-  const isClient = useIsClient();
-  const result = useQuery(api.agents.list, isClient ? args : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.agents.list, isReady ? args : "skip");
+  return isReady ? result : undefined;
 }
 
 /**
  * Get a single agent by ID.
  */
 export function useAgent(id: Id<"agents">) {
-  const isClient = useIsClient();
-  const result = useQuery(api.agents.get, isClient ? { id } : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.agents.get, isReady ? { id } : "skip");
+  return isReady ? result : undefined;
 }
 
 /**
  * Get agent by session key.
  */
 export function useAgentBySessionKey(sessionKey: string) {
-  const isClient = useIsClient();
-  const result = useQuery(api.agents.bySessionKey, isClient ? { sessionKey } : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.agents.bySessionKey, isReady ? { sessionKey } : "skip");
+  return isReady ? result : undefined;
 }

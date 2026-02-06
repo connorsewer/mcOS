@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useEffect, useState } from "react";
+import { useConvexReady } from "@/components/convex-provider";
 
 export type Squad = "oceans-11" | "dune";
 
@@ -43,15 +43,6 @@ export type CreateTaskArgs = {
   dueDate?: number;
 };
 
-// Hook to detect if we're on the client
-function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  return isClient;
-}
-
 /**
  * Get all tasks with optional filtering.
  */
@@ -59,27 +50,27 @@ export function useTasks(args: {
   status?: TaskStatus; 
   squad?: Squad 
 } = {}) {
-  const isClient = useIsClient();
-  const result = useQuery(api.tasks.list, isClient ? args : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.tasks.list, isReady ? args : "skip");
+  return isReady ? result : undefined;
 }
 
 /**
  * Get a single task by ID.
  */
 export function useTask(id: Id<"tasks">) {
-  const isClient = useIsClient();
-  const result = useQuery(api.tasks.get, isClient ? { id } : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.tasks.get, isReady ? { id } : "skip");
+  return isReady ? result : undefined;
 }
 
 /**
  * Get tasks requiring attention (review + blocked).
  */
 export function useAttentionTasks() {
-  const isClient = useIsClient();
-  const result = useQuery(api.tasks.attention, isClient ? {} : "skip");
-  return isClient ? result : undefined;
+  const isReady = useConvexReady();
+  const result = useQuery(api.tasks.attention, isReady ? {} : "skip");
+  return isReady ? result : undefined;
 }
 
 /**

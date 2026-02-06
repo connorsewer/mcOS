@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
 import ActivityPageClient from './page-client';
+import { ClientOnly } from '@/components/client-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,8 +23,8 @@ function LoadingFallback() {
 
 export default function ActivityPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
+    <ClientOnly fallback={<LoadingFallback />}>
       <ActivityPageClient />
-    </Suspense>
+    </ClientOnly>
   );
 }

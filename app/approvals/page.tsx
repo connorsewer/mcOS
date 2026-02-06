@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
 import ApprovalsPageClient from './page-client';
+import { ClientOnly } from '@/components/client-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,8 +22,8 @@ function LoadingFallback() {
 
 export default function ApprovalsPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
+    <ClientOnly fallback={<LoadingFallback />}>
       <ApprovalsPageClient />
-    </Suspense>
+    </ClientOnly>
   );
 }

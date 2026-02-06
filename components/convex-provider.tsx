@@ -1,7 +1,7 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, createContext, useContext } from "react";
 
 // Global singleton for the Convex client
 let globalConvexClient: ConvexReactClient | undefined;
@@ -21,21 +21,45 @@ function createConvexClient(): ConvexReactClient | undefined {
   return globalConvexClient;
 }
 
+// Context to signal when Convex is ready (client-side hydration complete)
+const ConvexReadyContext = createContext<boolean>(false);
+
+/**
+ * Hook to check if Convex provider is ready.
+ * Use this in hooks before calling useQuery to avoid SSR errors.
+ */
+export function useConvexReady(): boolean {
+  return useContext(ConvexReadyContext);
+}
+
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  // Create client synchronously on first render (only runs on client due to 'use client')
-  // But use useState to avoid creating during SSR
-  const [client] = useState(() => createConvexClient());
-  const [mounted, setMounted] = useState(false);
+  const [client, setClient] = useState<ConvexReactClient | undefined>(undefined);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Create client only on mount (client-side)
+    const convexClient = createConvexClient();
+    setClient(convexClient);
+    if (convexClient) {
+      setReady(true);
+    }
   }, []);
 
-  // During SSR and initial hydration, render without provider
-  // After mount, render with provider
-  if (!mounted || !client) {
-    return <>{children}</>;
+  // Always render children (for SSR), but wrap in ready context
+  // If client is ready, also wrap in ConvexProvider
+  if (!client) {
+    return (
+      <ConvexReadyContext.Provider value={false}>
+        {children}
+      </ConvexReadyContext.Provider>
+    );
   }
 
-  return <ConvexProvider client={client}>{children}</ConvexProvider>;
+  return (
+    <ConvexProvider client={client}>
+      <ConvexReadyContext.Provider value={ready}>
+        {children}
+      </ConvexReadyContext.Provider>
+    </ConvexProvider>
+  );
 }

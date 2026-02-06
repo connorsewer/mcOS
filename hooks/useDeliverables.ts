@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useEffect, useState } from "react";
+import { useConvexReady } from "@/components/convex-provider";
 
 export type Squad = 'oceans-11' | 'dune';
 export type Status = 'draft' | 'review' | 'approved' | 'published' | 'archived';
@@ -34,15 +34,6 @@ interface ListResult {
   cursor?: string;
 }
 
-// Hook to detect if we're on the client
-function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  return isClient;
-}
-
 /**
  * List deliverables with optional filtering
  */
@@ -52,12 +43,12 @@ export function useDeliverables(args?: {
   type?: DeliverableType;
   limit?: number;
 }) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   const result = useQuery(
     api.deliverables.list,
-    isClient ? args ?? {} : "skip"
+    isReady ? args ?? {} : "skip"
   );
-  return isClient ? result : undefined;
+  return isReady ? result : undefined;
 }
 
 /**
@@ -68,24 +59,24 @@ export function useDeliverablesSearch(args?: {
   squad?: Squad;
   limit?: number;
 }) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   const result = useQuery(
     api.deliverables.search,
-    isClient && args?.query ? { query: args.query, squad: args.squad, limit: args.limit } : "skip"
+    isReady && args?.query ? { query: args.query, squad: args.squad, limit: args.limit } : "skip"
   );
-  return isClient ? result : undefined;
+  return isReady ? result : undefined;
 }
 
 /**
  * Get a single deliverable by ID
  */
 export function useDeliverable(id?: string) {
-  const isClient = useIsClient();
+  const isReady = useConvexReady();
   const result = useQuery(
     api.deliverables.get,
-    isClient && id ? { id: id as Id<"deliverables"> } : "skip"
+    isReady && id ? { id: id as Id<"deliverables"> } : "skip"
   );
-  return isClient ? result : undefined;
+  return isReady ? result : undefined;
 }
 
 /**

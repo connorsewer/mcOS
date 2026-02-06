@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
 import AgentsPageClient from './page-client';
+import { ClientOnly } from '@/components/client-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,8 +24,8 @@ function LoadingFallback() {
 
 export default function AgentsPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
+    <ClientOnly fallback={<LoadingFallback />}>
       <AgentsPageClient />
-    </Suspense>
+    </ClientOnly>
   );
 }
