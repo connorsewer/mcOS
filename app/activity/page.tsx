@@ -1,6 +1,5 @@
 'use client';
 
-import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,9 @@ import {
   Clock,
   Search,
   Filter,
-  AlertCircle,
   MoreHorizontal
 } from "lucide-react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useActivities } from "@/hooks/useActivities";
 import { Skeleton, SkeletonActivityRow } from "@/components/skeleton";
 
 function ActivityItem({ activity }: { activity: any }) {
@@ -73,9 +70,7 @@ function ActivitySkeleton() {
 }
 
 export default function ActivityPage() {
-  unstable_noStore();
-  
-  const activities = useQuery(api.activities.list, { limit: 50 });
+  const activities = useActivities({ limit: 50 });
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredActivities = activities?.filter(activity => {

@@ -1,10 +1,6 @@
 'use client';
 
-import { unstable_noStore } from "next/cache";
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +10,18 @@ import { DeliverableEditor } from '@/components/deliverables/DeliverableEditor';
 import { DeliverableDetail } from '@/components/deliverables/DeliverableDetail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type Squad = 'oceans-11' | 'dune';
-type Status = 'draft' | 'review' | 'approved' | 'published' | 'archived';
-type DeliverableType = 'research' | 'blog_draft' | 'email_copy' | 'white_paper' | 'presentation' | 'image' | 'spreadsheet' | 'brief' | 'other';
+import {
+  useDeliverables,
+  useDeliverablesSearch,
+  useDeliverable,
+  useCreateDeliverable,
+  useUpdateDeliverable,
+  useUpdateDeliverableStatus,
+  type Squad,
+  type Status,
+  type Deliverable,
+  type DeliverableType,
+} from '@/hooks/useDeliverables';
 
 interface FilterState {
   squad: Squad | 'all';
@@ -25,26 +30,7 @@ interface FilterState {
   search: string;
 }
 
-// Deliverable interface - using string for _id as that's the runtime type
-// Convex branded Id types serialize to strings when passed between components
-interface Deliverable {
-  _id: string;
-  title: string;
-  type: DeliverableType;
-  status: Status;
-  squad: Squad;
-  createdByName: string;
-  version: number;
-  createdAt: number;
-  updatedAt: number;
-  content?: string;
-  fileUrl?: string;
-  fileType?: string;
-}
-
 export default function DeliverablesPage() {
-  unstable_noStore();
-
   // Get current user's squad (in production, this would come from auth context)
   const [userSquad] = useState<Squad>('oceans-11');
   
@@ -61,9 +47,8 @@ export default function DeliverablesPage() {
   const [selectedDeliverable, setSelectedDeliverable] = useState<Deliverable | null>(null);
 
   // Fetch deliverables from Convex
-  const deliverablesResult = useQuery(
-    api.deliverables.list,
-    filters.squad !== 'all' || filters.status !== 'all'
+  const deliverablesResult = useDeliverables(
+    filters.squad !== 'all' || filters.status !== 'all' || filters.type !== 'all'
       ? {
           squad: filters.squad !== 'all' ? filters.squad : undefined,
           status: filters.status !== 'all' ? filters.status : undefined,
@@ -74,27 +59,25 @@ export default function DeliverablesPage() {
   );
 
   // Fetch search results if search is active
-  const searchResults = useQuery(
-    api.deliverables.search,
+  const searchResults = useDeliverablesSearch(
     filters.search
       ? {
           query: filters.search,
           squad: filters.squad !== 'all' ? filters.squad : undefined,
           limit: 50,
         }
-      : 'skip'
+      : undefined
   );
 
   // Get detailed deliverable when selected
-  const detailedDeliverable = useQuery(
-    api.deliverables.get,
-    selectedDeliverable?._id ? { id: selectedDeliverable._id as Id<'deliverables'> } : 'skip'
+  const detailedDeliverable = useDeliverable(
+    selectedDeliverable?._id
   );
 
   // Mutations
-  const createDeliverable = useMutation(api.deliverables.create);
-  const updateDeliverable = useMutation(api.deliverables.update);
-  const updateStatus = useMutation(api.deliverables.updateStatus);
+  const createDeliverable = useCreateDeliverable();
+  const updateDeliverable = useUpdateDeliverable();
+  const updateStatus = useUpdateDeliverableStatus();
 
   // Handle create
   const handleCreate = async (data: {
@@ -137,7 +120,7 @@ export default function DeliverablesPage() {
     
     try {
       await updateDeliverable({
-        id: selectedDeliverable._id as Id<'deliverables'>,
+        id: selectedDeliverable._id,
         title: data.title,
         content: data.content,
         contentFormat: data.contentFormat,
@@ -158,7 +141,7 @@ export default function DeliverablesPage() {
     
     try {
       await updateStatus({
-        id: selectedDeliverable._id as Id<'deliverables'>,
+        id: selectedDeliverable._id,
         status,
         changeSummary: summary,
       });

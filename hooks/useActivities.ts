@@ -3,6 +3,7 @@
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useEffect, useState } from "react";
 
 export type Squad = "oceans-11" | "dune";
 
@@ -11,15 +12,26 @@ export type UseActivitiesFeedArgs = {
   initialNumItems?: number;
 };
 
+// Hook to detect if we're on the client
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient;
+}
+
 /**
  * Simple limit-based activity list (backward compatible).
  * Returns an array for easy use in existing components.
  */
 export function useActivities(args: { limit?: number; squad?: Squad } = {}) {
-  return useQuery(api.activities.list, {
+  const isClient = useIsClient();
+  const result = useQuery(api.activities.list, isClient ? {
     limit: args.limit ?? 50,
     squad: args.squad,
-  });
+  } : "skip");
+  return isClient ? result : undefined;
 }
 
 /**
@@ -27,11 +39,10 @@ export function useActivities(args: { limit?: number; squad?: Squad } = {}) {
  * Uses Convex's real-time subscriptions for live updates.
  */
 export function useActivitiesFeed(args: UseActivitiesFeedArgs = {}) {
+  const isClient = useIsClient();
   return usePaginatedQuery(
     api.activities.paginated,
-    {
-      squad: args.squad,
-    },
+    isClient ? { squad: args.squad } : "skip",
     {
       initialNumItems: args.initialNumItems ?? 50,
     }
@@ -45,9 +56,10 @@ export function useActivitiesByAgent(
   agentId: Id<"agents">,
   opts?: { initialNumItems?: number }
 ) {
+  const isClient = useIsClient();
   return usePaginatedQuery(
     api.activities.byAgent,
-    { agentId },
+    isClient ? { agentId } : "skip",
     { initialNumItems: opts?.initialNumItems ?? 20 }
   );
 }
@@ -59,9 +71,10 @@ export function useActivitiesByTask(
   taskId: Id<"tasks">,
   opts?: { initialNumItems?: number }
 ) {
+  const isClient = useIsClient();
   return usePaginatedQuery(
     api.activities.byTask,
-    { taskId },
+    isClient ? { taskId } : "skip",
     { initialNumItems: opts?.initialNumItems ?? 20 }
   );
 }

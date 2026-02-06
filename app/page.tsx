@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   AlertCircle, 
-  ArrowRight, 
   CheckCircle2, 
   Clock, 
   Users,
@@ -20,6 +19,9 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/skeleton";
 import Link from "next/link";
+import { useTasks } from "@/hooks/useTasks";
+import { useAgents } from "@/hooks/useAgents";
+import { useActivities } from "@/hooks/useActivities";
 
 // Status color mapping
 const statusColors: Record<string, string> = {
@@ -88,30 +90,18 @@ function StatCardSkeleton() {
   );
 }
 
-// Simple client-side data fetcher
-function useClientData() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    // Simulate loading for now - will be replaced with Convex
-    const timer = setTimeout(() => {
-      setData({
-        tasks: { active: 0, blocked: 0 },
-        agents: { active: 0 },
-        activities: []
-      });
-      setLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  return { data, loading };
-}
-
 export default function Home() {
-  const { data, loading } = useClientData();
+  // Use Convex hooks with SSR guards
+  const tasks = useTasks();
+  const agents = useAgents();
+  const activities = useActivities({ limit: 20 });
+
+  const isLoading = tasks === undefined || agents === undefined || activities === undefined;
+
+  // Stats
+  const activeTasks = tasks?.filter(t => t.status === 'in_progress').length || 0;
+  const blockedTasks = tasks?.filter(t => t.status === 'blocked').length || 0;
+  const activeAgents = agents?.filter(a => a.status === 'active').length || 0;
 
   return (
     <div className="space-y-8">
@@ -132,7 +122,7 @@ export default function Home() {
             Mission Control
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl">
-            Command center for Ocean's 11 and Dune squads. Manage tasks, monitor agents, and track operations in real-time.
+            Command center for Ocean&apos;s 11 and Dune squads. Manage tasks, monitor agents, and track operations in real-time.
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link href="/tasks">
@@ -163,7 +153,7 @@ export default function Home() {
           </Badge>
         </div>
         
-        {loading ? (
+        {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCardSkeleton />
             <StatCardSkeleton />
@@ -174,15 +164,15 @@ export default function Home() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Active Tasks"
-              value={data?.tasks?.active ?? 0}
-              subtitle={`${data?.tasks?.blocked ?? 0} blocked`}
+              value={activeTasks}
+              subtitle={`${blockedTasks} blocked`}
               icon={CheckCircle2}
               href="/tasks"
               color="blue"
             />
             <StatCard
               title="Blocked"
-              value={data?.tasks?.blocked ?? 0}
+              value={blockedTasks}
               subtitle="Need attention"
               icon={AlertCircle}
               href="/tasks"
@@ -190,7 +180,7 @@ export default function Home() {
             />
             <StatCard
               title="Active Agents"
-              value={data?.agents?.active ?? 0}
+              value={activeAgents}
               subtitle="Online now"
               icon={Users}
               href="/agents"
@@ -198,7 +188,7 @@ export default function Home() {
             />
             <StatCard
               title="Activities"
-              value={data?.activities?.length ?? 0}
+              value={activities?.length || 0}
               subtitle="Recent updates"
               icon={Activity}
               href="/activity"
