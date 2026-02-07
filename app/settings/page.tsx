@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { 
   Bell,
   Mail,
@@ -15,7 +16,9 @@ import {
   Key,
   ChevronRight,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Cloud,
+  Zap
 } from "lucide-react";
 
 function SettingsSection({ 
@@ -115,7 +118,7 @@ function IntegrationItem({
   );
 }
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const [notifications, setNotifications] = useState({
     emailSummary: true,
     urgentAlerts: true,
@@ -196,16 +199,16 @@ export default function SettingsPage() {
               detail="Connected"
             />
             <IntegrationItem 
-              icon={Database}
-              name="Supabase"
+              icon={Zap}
+              name="Convex"
               status="connected"
-              detail="Live data sync"
+              detail="Real-time sync active"
             />
             <IntegrationItem 
-              icon={Database}
-              name="Convex"
-              status="pending"
-              detail="Migration in progress"
+              icon={Cloud}
+              name="Vercel"
+              status="connected"
+              detail="Production deployment"
             />
           </div>
         </SettingsSection>
@@ -228,7 +231,7 @@ export default function SettingsPage() {
             <Separator className="my-2" />
             <Button variant="outline" className="w-full justify-between">
               Default Model Routing
-              <Badge variant="secondary">GPT-5.2 / Claude</Badge>
+              <Badge variant="secondary">Kimi K2.5 / Claude</Badge>
             </Button>
           </div>
         </SettingsSection>
@@ -237,18 +240,18 @@ export default function SettingsPage() {
         <SettingsSection 
           icon={Shield}
           title="Security"
-          description="API keys and access control"
+          description="Access control and approvals"
         >
           <div className="space-y-1">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg mb-3">
               <div className="flex items-center gap-3">
                 <Key className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <p className="font-medium text-sm">API Keys</p>
-                  <p className="text-xs text-muted-foreground">Manage external service keys</p>
+                  <p className="font-medium text-sm">Authentication</p>
+                  <p className="text-xs text-muted-foreground">Internal tool — no user auth required</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">Manage</Button>
+              <Badge variant="outline" className="text-xs">Internal</Badge>
             </div>
             <SettingsRow 
               title="Require approval for external actions"
@@ -265,5 +268,13 @@ export default function SettingsPage() {
         </SettingsSection>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <ErrorBoundary>
+      <SettingsPageContent />
+    </ErrorBoundary>
   );
 }
