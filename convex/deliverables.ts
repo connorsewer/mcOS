@@ -69,28 +69,29 @@ export const list = query({
       deliverables = deliverables.filter(d => d.type === type);
     }
 
-    // Join with agent names
-    const deliverablesWithAgents = await Promise.all(
-      deliverables.map(async (d) => {
-        try {
-          const agent = d.createdByAgentId 
-            ? await ctx.db.get(d.createdByAgentId) 
-            : null;
-          return {
-            ...d,
-            createdByName: agent?.name ?? "Unknown Agent",
-            createdByRole: agent?.role ?? "Unknown",
-          };
-        } catch (err) {
-          console.error(`Error fetching agent for deliverable ${d._id}:`, err);
-          return {
-            ...d,
-            createdByName: "Unknown Agent",
-            createdByRole: "Unknown",
-          };
-        }
-      })
+    // Batch fetch agents to avoid N+1 queries
+    const agentIds = [...new Set(
+      deliverables
+        .map(d => d.createdByAgentId)
+        .filter((id): id is NonNullable<typeof id> => id !== undefined)
+    )];
+    
+    const agents = await Promise.all(agentIds.map(id => ctx.db.get(id)));
+    const agentMap = new Map(
+      agents
+        .filter((a): a is NonNullable<typeof a> => a !== null)
+        .map(a => [a._id, a])
     );
+
+    // Join with agent names using the map (O(1) lookup)
+    const deliverablesWithAgents = deliverables.map(d => {
+      const agent = d.createdByAgentId ? agentMap.get(d.createdByAgentId) : null;
+      return {
+        ...d,
+        createdByName: agent?.name ?? "Unknown Agent",
+        createdByRole: agent?.role ?? "Unknown",
+      };
+    });
 
     return {
       items: deliverablesWithAgents,
@@ -155,23 +156,33 @@ export const search = query({
     }
 
     // Filter by search query
-    const filtered = deliverables.filter(d => 
-      d.title.toLowerCase().includes(lowerQuery) ||
-      (d.content?.toLowerCase().includes(lowerQuery) ?? false)
-    );
+    const filtered = deliverables
+      .filter(d => 
+        d.title.toLowerCase().includes(lowerQuery) ||
+        (d.content?.toLowerCase().includes(lowerQuery) ?? false)
+      )
+      .slice(0, limit);
 
-    // Join with agent names
-    const deliverablesWithAgents = await Promise.all(
-      filtered.slice(0, limit).map(async (d) => {
-        const agent = await ctx.db.get(d.createdByAgentId);
-        return {
-          ...d,
-          createdByName: agent?.name ?? "Unknown Agent",
-        };
-      })
-    );
+    // Batch fetch agents
+    const agentIds = filtered
+      .map(d => d.createdByAgentId)
+      .filter((id): id is NonNullable<typeof id> => id !== undefined);
+    const uniqueAgentIds = [...new Set(agentIds)];
+    const agents = await Promise.all(uniqueAgentIds.map(id => ctx.db.get(id)));
+    const agentMap = new Map<string, { name: string }>();
+    for (const agent of agents) {
+      if (agent) {
+        agentMap.set(agent._id, { name: agent.name });
+      }
+    }
 
-    return deliverablesWithAgents;
+    // Join with agent names using map
+    return filtered.map(d => ({
+      ...d,
+      createdByName: d.createdByAgentId 
+        ? agentMap.get(d.createdByAgentId)?.name ?? "Unknown Agent"
+        : "Unknown Agent",
+    }));
   },
 });
 
@@ -187,17 +198,25 @@ export const byTask = query({
       .order("desc")
       .take(50);
 
-    const deliverablesWithAgents = await Promise.all(
-      deliverables.map(async (d) => {
-        const agent = await ctx.db.get(d.createdByAgentId);
-        return {
-          ...d,
-          createdByName: agent?.name ?? "Unknown Agent",
-        };
-      })
-    );
+    // Batch fetch agents
+    const agentIds = deliverables
+      .map(d => d.createdByAgentId)
+      .filter((id): id is NonNullable<typeof id> => id !== undefined);
+    const uniqueAgentIds = [...new Set(agentIds)];
+    const agents = await Promise.all(uniqueAgentIds.map(id => ctx.db.get(id)));
+    const agentMap = new Map<string, { name: string }>();
+    for (const agent of agents) {
+      if (agent) {
+        agentMap.set(agent._id, { name: agent.name });
+      }
+    }
 
-    return deliverablesWithAgents;
+    return deliverables.map(d => ({
+      ...d,
+      createdByName: d.createdByAgentId 
+        ? agentMap.get(d.createdByAgentId)?.name ?? "Unknown Agent"
+        : "Unknown Agent",
+    }));
   },
 });
 
