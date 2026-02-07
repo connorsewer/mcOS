@@ -13,6 +13,7 @@ import {
   Filter
 } from "lucide-react";
 import { Skeleton } from "@/components/skeleton";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useAgents, type Agent, type Squad } from "@/hooks/useAgents";
 
 interface AgentCardProps {
@@ -92,7 +93,7 @@ function AgentSkeleton() {
   );
 }
 
-export default function AgentsPage() {
+function AgentsPageContent() {
   unstable_noStore();
   
   const [activeTab, setActiveTab] = useState<'all' | 'oceans' | 'dune'>('all');
@@ -256,5 +257,13 @@ export default function AgentsPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function AgentsPage() {
+  return (
+    <ErrorBoundary>
+      <AgentsPageContent />
+    </ErrorBoundary>
   );
 }

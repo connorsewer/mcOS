@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
 import { Skeleton, SkeletonActivityRow } from "@/components/skeleton";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 function ActivityItem({ activity }: { activity: any }) {
   const formatTime = (timestamp: number) => {
@@ -69,7 +70,7 @@ function ActivitySkeleton() {
   );
 }
 
-export default function ActivityPage() {
+function ActivityPageContent() {
   const activities = useActivities({ limit: 50 });
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -171,5 +172,13 @@ export default function ActivityPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function ActivityPage() {
+  return (
+    <ErrorBoundary>
+      <ActivityPageContent />
+    </ErrorBoundary>
   );
 }

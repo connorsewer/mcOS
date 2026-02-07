@@ -15,11 +15,13 @@ import {
   History,
   ChevronDown,
   ChevronUp,
-  ExternalLink
+  ExternalLink,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from './StatusBadge';
 import { DeliverableEditor } from './DeliverableEditor';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 type DeliverableType = 'research' | 'blog_draft' | 'email_copy' | 'white_paper' | 'presentation' | 'image' | 'spreadsheet' | 'brief' | 'other';
 type DeliverableStatus = 'draft' | 'review' | 'approved' | 'published' | 'archived';
@@ -205,23 +207,42 @@ export function DeliverableDetail({
 
         {/* Status Workflow Actions */}
         <div className="flex items-center gap-2">
-          {availableTransitions.map((transition) => (
-            <button
-              key={transition.to}
-              onClick={() => onStatusChange(transition.to, transition.label)}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                transition.color,
-                'border border-transparent',
-                transition.to === 'approved' && 'bg-emerald-500/10 border-emerald-500/30',
-                transition.to === 'published' && 'bg-blue-500/10 border-blue-500/30',
-                transition.to === 'review' && 'bg-amber-500/10 border-amber-500/30'
-              )}
-            >
-              {transition.icon}
-              {transition.label}
-            </button>
-          ))}
+          {availableTransitions.map((transition) => {
+            const isDestructive = transition.to === 'archived';
+            const button = (
+              <button
+                key={transition.to}
+                onClick={isDestructive ? undefined : () => onStatusChange(transition.to, transition.label)}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  transition.color,
+                  'border border-transparent',
+                  transition.to === 'approved' && 'bg-emerald-500/10 border-emerald-500/30',
+                  transition.to === 'published' && 'bg-blue-500/10 border-blue-500/30',
+                  transition.to === 'review' && 'bg-amber-500/10 border-amber-500/30'
+                )}
+              >
+                {transition.icon}
+                {transition.label}
+              </button>
+            );
+
+            if (isDestructive) {
+              return (
+                <ConfirmDialog
+                  key={transition.to}
+                  trigger={button}
+                  title="Archive this deliverable?"
+                  description="This will move the deliverable to the archive. You can restore it later if needed."
+                  confirmText="Archive"
+                  variant="destructive"
+                  onConfirm={() => onStatusChange(transition.to, transition.label)}
+                />
+              );
+            }
+
+            return button;
+          })}
           <button
             onClick={() => setIsEditing(true)}
             className={cn(

@@ -18,6 +18,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Skeleton } from "@/components/skeleton";
+import { ErrorBoundary } from "@/components/error-boundary";
 import Link from "next/link";
 import { useTasks } from "@/hooks/useTasks";
 import { useAgents } from "@/hooks/useAgents";
@@ -90,7 +91,7 @@ function StatCardSkeleton() {
   );
 }
 
-export default function Home() {
+function HomeContent() {
   // Use Convex hooks with SSR guards
   const tasks = useTasks();
   const agents = useAgents();
@@ -244,5 +245,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <ErrorBoundary>
+      <HomeContent />
+    </ErrorBoundary>
   );
 }

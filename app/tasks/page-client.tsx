@@ -27,6 +27,7 @@ import {
   type Squad 
 } from "@/hooks/useTasks";
 import { Skeleton } from "@/components/skeleton";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useToast } from "@/hooks/use-toast";
 import {
   Tooltip,
@@ -168,7 +169,7 @@ function TaskColumnSkeleton() {
   );
 }
 
-export default function TasksPage() {
+function TasksPageContent() {
   unstable_noStore();
   
   const [activeFilter, setActiveFilter] = useState<'all' | 'oceans' | 'dune'>('all');
@@ -475,5 +476,13 @@ export default function TasksPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <ErrorBoundary>
+      <TasksPageContent />
+    </ErrorBoundary>
   );
 }

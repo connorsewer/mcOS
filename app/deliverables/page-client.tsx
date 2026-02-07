@@ -9,6 +9,8 @@ import { DeliverableFilters } from '@/components/deliverables/DeliverableFilters
 import { DeliverableEditor } from '@/components/deliverables/DeliverableEditor';
 import { DeliverableDetail } from '@/components/deliverables/DeliverableDetail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { useToast } from '@/hooks/use-toast';
 
 import {
   useDeliverables,
@@ -30,7 +32,9 @@ interface FilterState {
   search: string;
 }
 
-export default function DeliverablesPage() {
+function DeliverablesPageContent() {
+  const { toast } = useToast();
+  
   // Get current user's squad (in production, this would come from auth context)
   const [userSquad] = useState<Squad>('oceans-11');
   
@@ -100,9 +104,17 @@ export default function DeliverablesPage() {
         fileSize: data.fileSize,
       });
       setShowCreateModal(false);
+      toast({
+        title: 'Created!',
+        description: 'Deliverable has been created.',
+      });
     } catch (error) {
       console.error('Failed to create deliverable:', error);
-      alert('Failed to create deliverable. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to create deliverable. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -129,9 +141,17 @@ export default function DeliverablesPage() {
         fileSize: data.fileSize,
         changeSummary: data.changeSummary,
       });
+      toast({
+        title: 'Saved!',
+        description: 'Changes have been saved.',
+      });
     } catch (error) {
       console.error('Failed to update deliverable:', error);
-      alert('Failed to update deliverable. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to update deliverable. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -145,9 +165,17 @@ export default function DeliverablesPage() {
         status,
         changeSummary: summary,
       });
+      toast({
+        title: 'Status updated!',
+        description: `Deliverable is now ${status}.`,
+      });
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to update status. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -269,5 +297,14 @@ function StatCard({ label, value, color }: { label: string; value: number; color
       <p className="text-sm text-zinc-500">{label}</p>
       <p className={cn('text-2xl font-bold mt-1', color)}>{value}</p>
     </div>
+  );
+}
+
+// Export with error boundary
+export default function DeliverablesPage() {
+  return (
+    <ErrorBoundary>
+      <DeliverablesPageContent />
+    </ErrorBoundary>
   );
 }
