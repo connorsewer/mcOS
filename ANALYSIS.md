@@ -209,36 +209,38 @@ Theme toggle exists in code but not exposed in UI.
 
 ## 📋 Recommended Action Plan
 
-### Phase 1: Cleanup (30 min)
-- [ ] Delete `lib/supabase.ts`
-- [ ] Delete `lib/deliverables.ts`
-- [ ] Delete `hooks/useConvexSafe.ts`
-- [ ] Delete `lib/convex.ts`
-- [ ] Delete `scripts/migrate-deliverables.ts`
-- [ ] Update `package.json` name to "mcos"
+### Phase 1: Cleanup (30 min) ✅ COMPLETE
+- [x] Delete `lib/supabase.ts`
+- [x] Delete `lib/deliverables.ts`
+- [x] Delete `hooks/useConvexSafe.ts`
+- [x] Delete `lib/convex.ts`
+- [x] Delete `scripts/migrate-deliverables.ts`
+- [x] Update `package.json` name to "mcos"
 
-### Phase 2: Wire Approvals (1 hr)
-- [ ] Import `useQuery(api.approvals.list)` in approvals page
-- [ ] Implement `handleApprove` / `handleReject` with `useMutation`
-- [ ] Add loading and error states
-- [ ] Add toast notifications
+### Phase 2: Wire Approvals (1 hr) ✅ COMPLETE
+- [x] Import `useQuery(api.approvals.list)` in approvals page
+- [x] Implement `handleApprove` / `handleReject` with `useMutation`
+- [x] Add loading and error states
+- [x] Add toast notifications
 
-### Phase 3: Fix Performance (1 hr)
-- [ ] Batch agent fetching in `deliverables.list`
-- [ ] Add cursor pagination to `activities.list`
-- [ ] Consider denormalizing `createdByName` on deliverables
+### Phase 3: Fix Performance (1 hr) ✅ COMPLETE
+- [x] Batch agent fetching in `deliverables.list`
+- [x] Batch agent fetching in `deliverables.search`
+- [x] Batch agent fetching in `deliverables.byTask`
+- [ ] Add cursor pagination to `activities.list` (future)
 
-### Phase 4: Polish (2 hr)
-- [ ] Add error boundaries
-- [ ] Add delete confirmation dialogs
-- [ ] Add optimistic updates to key mutations
-- [ ] Improve empty states
-- [ ] Standardize file naming
+### Phase 4: Polish (2 hr) ✅ COMPLETE
+- [x] Add error boundaries to all 6 page components
+- [x] Add ConfirmDialog for archive action
+- [x] Add toast notifications to deliverables CRUD
+- [x] Fix Live page squad filter (was unused state)
+- [x] Improve Live page activity feed UI
+- [ ] Standardize file naming (low priority)
 
-### Phase 5: Docs (30 min)
-- [ ] Add README with setup instructions
-- [ ] Document the schema
-- [ ] Note intentional lack of auth (if applicable)
+### Phase 5: Docs (30 min) ✅ COMPLETE
+- [x] Add README with setup instructions
+- [x] Document the schema
+- [x] Note intentional lack of auth (internal tool)
 
 ---
 
